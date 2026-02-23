@@ -273,7 +273,7 @@ handler:SetScript('OnEvent', HandleEvent)
 
 -- globals
 function Flyout_OnClick(button)
-   if not button or not button.flyoutActionType or not button.flyoutAction then
+   if not button or not button.flyoutActionType or not button.flyoutAction or button.flyoutAction == 0 then
       return
    end
 
