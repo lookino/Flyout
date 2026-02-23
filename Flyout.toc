@@ -1,8 +1,8 @@
 ## Interface: 11200
-## Title: Flyout |cff808080by luskanek
-## Author: luskanek
+## Title: Flyout |cff808080by lookino
+## Author: lookino
 ## Notes: Allows the player to create a flyout action bar button.
-## Version: GIT
+## Version: 1.0.0
 ## SavedVariablesPerCharacter: Flyout_Config
 
 Templates.xml
