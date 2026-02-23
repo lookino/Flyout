@@ -190,50 +190,8 @@ local function UpdateBarButton(slot)
          arrow:Hide()
       end
 
-      if HasAction(slot) then
-         button.sticky = false
-
-         local macro = GetActionText(slot)
-         if macro then
-            local _, _, body = GetMacroInfo(GetMacroIndexByName(macro))
-            local s, e = strfind(body, '/flyout')
-            if s and s == 1 and e == 7 then
-               if not button.preFlyoutOnEnter then
-                  button.preFlyoutOnEnter = button:GetScript('OnEnter')
-                  button.preFlyoutOnLeave = button:GetScript('OnLeave')
-               end
-
-               -- Identify sticky menus.
-               if strfind(body, '%[sticky%]') then
-                  body = strgsub(body, '%[sticky%]', '')
-                  button.sticky = true
-               end
-
-               if strfind(body, '%[icon%]') then
-                  body = strgsub(body, '%[icon%]', '')
-               end
-
-               body = strsub(body, e + 1)
-
-               if not button.flyoutActions then
-                  button.flyoutActions = {}
-               end
-
-               strsplit(body, ';', button.flyoutActions)
-
-               if table.getn(button.flyoutActions) > 0 then
-                  button.flyoutAction, button.flyoutActionType = GetFlyoutActionInfo(button.flyoutActions[1])
-               end
-
-               Flyout_UpdateFlyoutArrow(button)
-
-               button:SetScript('OnLeave', FlyoutBarButton_OnLeave)
-               button:SetScript('OnEnter', FlyoutBarButton_OnEnter)
-            end
-         end
-
-      else
-         -- Reset button to pre-Flyout condition.
+      if not HasAction(slot) or not GetActionText(slot) then
+          -- Reset button to pre-Flyout condition.
          button.flyoutActionType = nil
          button.flyoutAction = nil
          if button.preFlyoutOnEnter then
@@ -242,6 +200,46 @@ local function UpdateBarButton(slot)
             button.preFlyoutOnEnter = nil
             button.preFlyoutOnLeave = nil
          end
+         return
+      end
+
+      button.sticky = false
+
+      local macro = GetActionText(slot)
+      local _, _, body = GetMacroInfo(GetMacroIndexByName(macro))
+      local s, e = strfind(body, '/flyout')
+      if s and s == 1 and e == 7 then
+         if not button.preFlyoutOnEnter then
+            button.preFlyoutOnEnter = button:GetScript('OnEnter')
+            button.preFlyoutOnLeave = button:GetScript('OnLeave')
+         end
+
+         -- Identify sticky menus.
+         if strfind(body, '%[sticky%]') then
+            body = strgsub(body, '%[sticky%]', '')
+            button.sticky = true
+         end
+
+         if strfind(body, '%[icon%]') then
+            body = strgsub(body, '%[icon%]', '')
+         end
+
+         body = strsub(body, e + 1)
+
+         if not button.flyoutActions then
+            button.flyoutActions = {}
+         end
+
+         strsplit(body, ';', button.flyoutActions)
+
+         if table.getn(button.flyoutActions) > 0 then
+            button.flyoutAction, button.flyoutActionType = GetFlyoutActionInfo(button.flyoutActions[1])
+         end
+
+         Flyout_UpdateFlyoutArrow(button)
+
+         button:SetScript('OnLeave', FlyoutBarButton_OnLeave)
+         button:SetScript('OnEnter', FlyoutBarButton_OnEnter)
       end
    end
 end
@@ -469,7 +467,7 @@ function Flyout_GetActionButton(action)
       for j = 1, 12 do
          local button = _G[bars[i] .. 'Button' .. j]
          local slot = ActionButton_GetPagedID(button)
-         if slot == action and button:IsVisible() then
+         if slot == action then
             return button
          end
       end
