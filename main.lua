@@ -23,6 +23,8 @@ local ARROW_RATIO = 0.6  -- Height to width.
 local ActionButton_GetPagedID = ActionButton_GetPagedID
 local ChatEdit_SendText = ChatEdit_SendText
 local GetActionText = GetActionText
+local GetContainerItemLink = GetContainerItemLink
+local GetContainerNumSlots = GetContainerNumSlots
 local GetNumSpellTabs = GetNumSpellTabs
 local GetSpellName = GetSpellName
 local GetSpellTabInfo = GetSpellTabInfo
@@ -49,27 +51,25 @@ local function strtrim(str)
    return strsub(str, e + 1, s - 1)
 end
 
-local function tblclear(tbl)
-	if type(tbl) ~= 'table' then
-		return
-	end
+local function wipe(tbl)
+   if type(tbl) ~= 'table' then
+      return
+   end
 
-	-- Clear array-type tables first so table.insert will start over at 1.
-	for i = sizeof(tbl), 1, -1 do
-		remove(tbl, i)
-	end
+   for i = sizeof(tbl), 1, -1 do
+      remove(tbl, i)
+   end
 
-	-- Remove any remaining associative table elements.
-	-- Credit: https://stackoverflow.com/a/27287723
-	for k in next, tbl do
-		rawset(tbl, k, nil)
-	end
+   -- Credit: https://stackoverflow.com/a/27287723
+   for k in next, tbl do
+      rawset(tbl, k, nil)
+   end
 end
 
-local strSplitReturn = {}  -- Reusable table for strsplit() when fillTable parameter isn't used.
+local tsplit = {}
 local function strsplit(str, delimiter, fillTable)
-   fillTable = fillTable or strSplitReturn
-   tblclear(fillTable)
+   fillTable = fillTable or tsplit
+   wipe(fillTable)
    strgsub(str, '([^' .. delimiter .. ']+)', function(value)
       insert(fillTable, strtrim(value))
    end)
@@ -77,66 +77,55 @@ local function strsplit(str, delimiter, fillTable)
    return fillTable
 end
 
--- ITEMS
--- this can all be written better, but I don't care
 function GetBagPosition(name)
-  for bag = 0,4 do
-    for slot = 1,GetContainerNumSlots(bag) do
-      local item = GetContainerItemLink(bag,slot)
-      if item and string.find(strlower(item),strlower(name)) then
-        return bag, slot
+   local link
+   for bag = 0, 4 do
+      for slot = 1, GetContainerNumSlots(bag) do
+         item = GetContainerItemLink(bag, slot)
+         if item and strfind(strlower(item), strlower(name)) then
+            return bag, slot
+         end
       end
-    end
-  end
+   end
 end
 
 function GetItemTexture(name)
-  for bag = 0,4 do
-    for slot = 1,GetContainerNumSlots(bag) do
-      local item = GetContainerItemLink(bag,slot)
-      if item and string.find(strlower(item),strlower(name)) then
-         local texture, _, _, _, _ = GetContainerItemInfo(bag,slot);
-        return texture
+   local item
+   for bag = 0, 4 do
+      for slot = 1, GetContainerNumSlots(bag) do
+         item = GetContainerItemLink(bag, slot)
+         if item and strfind(strlower(item), strlower(name)) then
+            return GetContainerItemInfo(bag, slot)
+         end
       end
-    end
-  end
+   end
 end
 
 function GetBagItemByName(name)
-  for bag = 0,4 do
-    for slot = 1,GetContainerNumSlots(bag) do
-      local item = GetContainerItemLink(bag,slot)
-      if item and string.find(strlower(item),strlower(name)) then
-         local _,_,itemLink = string.find(GetContainerItemLink(bag,slot),"(item:%d+)")
-        return itemLink
+   local item
+   for bag = 0, 4 do
+      for slot = 1, GetContainerNumSlots(bag) do
+         item = GetContainerItemLink(bag, slot)
+         if item and strfind(strlower(item), strlower(name)) then
+            local _, _, itemLink = strfind(GetContainerItemLink(bag, slot), '(item:%d+)')
+            return itemLink
+         end
       end
-    end
-  end
+   end
 end
-
-function UseContainerItemByName(search)
-  for bag = 0,4 do
-    for slot = 1,GetContainerNumSlots(bag) do
-      local item = GetContainerItemLink(bag,slot)
-      if item and string.find(strlower(item),strlower(search)) then
-        UseContainerItem(bag,slot)
-      end
-    end
-  end
-end
--- ITEMS
-
 
 -- credit: https://github.com/DanielAdolfsson/CleverMacro
 local function GetSpellSlotByName(name)
+   local count, offset, spell, subSpell
+
    name = strlower(name)
    local b, _, rank = strfind(name, '%(%s*rank%s+(%d+)%s*%)')
    if b then name = (b > 1) and strtrim(strsub(name, 1, b - 1)) or '' end
 
    for tabIndex = GetNumSpellTabs(), 1, -1 do
-      local _, _, offset, count = GetSpellTabInfo(tabIndex)
+      _, _, offset, count = GetSpellTabInfo(tabIndex)
       for index = offset + count, offset + 1, -1 do
-         local spell, subSpell = GetSpellName(index, 'spell')
+         spell, subSpell = GetSpellName(index, 'spell')
          spell = strlower(spell)
          if name == spell and (not rank or subSpell == 'Rank ' .. rank) then
             return index
@@ -191,7 +180,7 @@ end
 local function FlyoutBarButton_OnEnter()
    ActionButton_SetTooltip()
    Flyout_Show(this)
- end
+end
 
 local function UpdateBarButton(slot)
    local button = Flyout_GetActionButton(slot)
