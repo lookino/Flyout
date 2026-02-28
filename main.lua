@@ -10,6 +10,8 @@ local bars = {
    'MultiBarLeft'
 }
 
+local flyouts = {}
+
 FLYOUT_DEFAULT_CONFIG = {
    ['REVISION'] = revision,
    ['BUTTON_SIZE'] = 28,
@@ -200,6 +202,8 @@ local function UpdateBarButton(slot)
             button.preFlyoutOnEnter = nil
             button.preFlyoutOnLeave = nil
          end
+
+         flyouts[slot] = nil
          return
       end
 
@@ -233,7 +237,21 @@ local function UpdateBarButton(slot)
          strsplit(body, ';', button.flyoutActions)
 
          if table.getn(button.flyoutActions) > 0 then
+            local cost = 0
+
             button.flyoutAction, button.flyoutActionType = GetFlyoutActionInfo(button.flyoutActions[1])
+
+            if button.flyoutActionType == 0 then
+               FlyoutScanner:SetOwner(WorldFrame, 'ANCHOR_NONE')
+               FlyoutScanner:SetSpell(button.flyoutAction, 'spell')
+               _, _, cost = string.find(FlyoutScanner.manaText:GetText() or '', '^(%d+)')
+            end
+
+            flyouts[slot] = {
+               action = button.flyoutAction,
+               type = button.flyoutActionType,
+               cost = tonumber(cost)
+            }
          end
 
          Flyout_UpdateFlyoutArrow(button)
@@ -255,13 +273,23 @@ local function HandleEvent()
             Flyout_Config[key] = value
          end
       end
+      return
+   elseif event == 'PLAYER_ENTERING_WORLD' then
+      local scanner = CreateFrame('GameTooltip', 'FlyoutScanner')
+      scanner:SetOwner(WorldFrame, 'ANCHOR_NONE')
+      scanner.nameText = scanner:CreateFontString()
+      scanner.rankText = scanner:CreateFontString()
+      scanner.manaText = scanner:CreateFontString()
+      scanner:AddFontStrings(scanner.nameText, scanner.rankText)
+      scanner:AddFontStrings(scanner.manaText, scanner:CreateFontString())
    elseif event == 'ACTIONBAR_SLOT_CHANGED' then
       Flyout_Hide(true)  -- Keep sticky menus open.
       UpdateBarButton(arg1)
-   else
-      Flyout_Hide()
-      Flyout_UpdateBars()
+      return
    end
+
+   Flyout_Hide()
+   Flyout_UpdateBars()
 end
 
 local handler = CreateFrame('Frame')
@@ -524,9 +552,36 @@ function Flyout_UpdateFlyoutArrow(button)
    end
 end
 
-local Flyout_UseAction = UseAction
+local original = {}
+
+original.GetActionCooldown = GetActionCooldown
+function GetActionCooldown(slot)
+   local action = flyouts[slot]
+   if action then
+      if action.type == 0 then
+         return GetSpellCooldown(action.action, 'spell')
+      end
+   end
+   return original.GetActionCooldown(slot)
+end
+
+original.IsUsableAction = IsUsableAction
+function IsUsableAction(slot)
+   local action = flyouts[slot]
+   if action then
+      if UnitMana('player') >= action.cost then
+         return true, false
+      else
+         return false, true
+      end
+   end
+   return original.IsUsableAction(slot, unit)
+end
+
+original.UseAction = UseAction
 function UseAction(slot, checkCursor)
-   Flyout_UseAction(slot, checkCursor)
+   original.UseAction(slot, checkCursor)
+
    Flyout_OnClick(Flyout_GetActionButton(slot))
    Flyout_Hide()
 end
