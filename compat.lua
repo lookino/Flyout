@@ -3,47 +3,34 @@ local _G = getfenv(0)
 -- upvalues
 local IsAddOnLoaded = IsAddOnLoaded
 
-local mod = math.mod
-
 -- Bongos
 local function GetActionButton_Bongos(action)
     return _G['BActionButton' .. action]
 end
 
 -- pfUI
+local PF_BARS = {
+    { name = "pfActionBarMain",       first = 1 },
+    { name = "pfActionBarPaging",     first = 13 },
+    { name = "pfActionBarRight",      first = 25 },
+    { name = "pfActionBarVertical",   first = 37 },
+    { name = "pfActionBarLeft",       first = 49 },
+    { name = "pfActionBarTop",        first = 61 },
+    { name = "pfActionBarStanceBar1", first = 73 },
+    { name = "pfActionBarStanceBar2", first = 85 },
+    { name = "pfActionBarStanceBar3", first = 97 },
+    { name = "pfActionBarStanceBar4", first = 109 },
+}
+
 local function GetActionButton_PF(action)
-    local bar = nil
-
-    if action < 25 then
-        bar = 'pfActionBarMain'
-    elseif action < 37 then
-        bar = 'pfActionBarRight'
-    elseif action < 49 then
-        bar = 'pfActionBarVertical'
-    elseif action < 61 then
-        bar = 'pfActionBarLeft'
-    elseif action < 73 then
-        bar = 'pfActionBarTop'
-    elseif action < 85 then
-        bar = 'pfActionBarStanceBar1'
-    elseif action < 97 then
-        bar = 'pfActionBarStanceBar2'
-    elseif action < 109 then
-        bar = 'pfActionBarStanceBar3'
-    elseif action < 121 then
-        bar = 'pfActionBarStanceBar4'
-    else
-        bar = 'pfActionBarMain'
+    for i = 1, table.getn(PF_BARS) do
+        local bar = PF_BARS[i]
+        local nextFirst = PF_BARS[i + 1] and PF_BARS[i + 1].first or 121
+        if action >= bar.first and action < nextFirst then
+            local index = action - bar.first + 1
+            return _G[bar.name .. "Button" .. index]
+        end
     end
-
-    local i = 1
-    if mod(action, 12) ~= 0 then
-        i = mod(action, 12)
-    else
-        i = 12
-    end
-
-    return _G[bar .. 'Button' .. i]
 end
 
 -- Dragonflight3
