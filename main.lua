@@ -91,18 +91,6 @@ function GetBagPosition(name)
    end
 end
 
-function GetItemTexture(name)
-   local item
-   for bag = 0, 4 do
-      for slot = 1, GetContainerNumSlots(bag) do
-         item = GetContainerItemLink(bag, slot)
-         if item and strfind(strlower(item), strlower(name)) then
-            return GetContainerItemInfo(bag, slot)
-         end
-      end
-   end
-end
-
 function GetBagItemByName(name)
    local item
    for bag = 0, 4 do
@@ -143,7 +131,7 @@ local function GetFlyoutActionInfo(action)
       return spell, 0, GetSpellTexture(spell, 'spell')
    elseif GetBagItemByName(action) then
       local item, bag, slot = GetBagItemByName(action)
-      return item, 2, GetItemTexture(action), bag, slot
+      return item, 2, GetContainerItemInfo(bag, slot), bag, slot
    elseif GetMacroIndexByName(action) then
       local macro = GetMacroIndexByName(action)
       local _, texture = GetMacroInfo(macro)
