@@ -110,7 +110,7 @@ function GetBagItemByName(name)
          item = GetContainerItemLink(bag, slot)
          if item and strfind(strlower(item), strlower(name)) then
             local _, _, itemLink = strfind(GetContainerItemLink(bag, slot), '(item:%d+)')
-            return itemLink
+            return itemLink, bag, slot
          end
       end
    end
@@ -142,7 +142,8 @@ local function GetFlyoutActionInfo(action)
       local spell = GetSpellSlotByName(action)
       return spell, 0, GetSpellTexture(spell, 'spell')
    elseif GetBagItemByName(action) then
-      return GetBagItemByName(action), 2, GetItemTexture(action)
+      local item, bag, slot = GetBagItemByName(action)
+      return item, 2, GetItemTexture(action), bag, slot
    elseif GetMacroIndexByName(action) then
       local macro = GetMacroIndexByName(action)
       local _, texture = GetMacroInfo(macro)
@@ -244,7 +245,7 @@ local function UpdateBarButton(slot)
 
          if table.getn(button.flyoutActions) > 0 then
             local cost
-            local action, type, texture = GetFlyoutActionInfo(button.flyoutActions[1])
+            local action, type, texture, bag, bagSlot = GetFlyoutActionInfo(button.flyoutActions[1])
 
             if type == 0 then
                FlyoutScanner:SetOwner(WorldFrame, 'ANCHOR_NONE')
@@ -256,7 +257,9 @@ local function UpdateBarButton(slot)
                action = action,
                type = type,
                texture = icon and texture or false,
-               cost = cost and tonumber(cost) or 0
+               cost = cost and tonumber(cost) or 0,
+               bag = bag,
+               slot = bagSlot
             }
 
             button.flyoutAction = action
@@ -551,6 +554,8 @@ function GetActionCooldown(slot)
    if action then
       if action.type == 0 then
          return GetSpellCooldown(action.action, 'spell')
+      elseif action.type == 2 then
+         return GetContainerItemCooldown(action.bag, action.slot)
       end
    end
    return original.GetActionCooldown(slot)
