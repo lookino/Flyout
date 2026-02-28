@@ -2,7 +2,7 @@
 ## Title: Flyout |cff808080by lookino
 ## Author: lookino
 ## Notes: Allows the player to create a flyout action bar button.
-## Version: 1.1.1
+## Version: 1.1.2
 ## SavedVariablesPerCharacter: Flyout_Config
 
 Templates.xml

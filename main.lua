@@ -136,14 +136,17 @@ local function GetSpellSlotByName(name)
    end
 end
 
--- Returns <action>, <actionType>
+-- Returns <action>, <actionType>, <actionTexture>
 local function GetFlyoutActionInfo(action)
    if GetSpellSlotByName(action) then
-      return GetSpellSlotByName(action), 0
+      local spell = GetSpellSlotByName(action)
+      return spell, 0, GetSpellTexture(spell, 'spell')
    elseif GetBagItemByName(action) then
-      return GetBagItemByName(action), 2
+      return GetBagItemByName(action), 2, GetItemTexture(action)
    elseif GetMacroIndexByName(action) then
-      return GetMacroIndexByName(action), 1
+      local macro = GetMacroIndexByName(action)
+      local _, texture = GetMacroInfo(macro)
+      return macro, 1, texture
    end
 end
 
@@ -209,6 +212,7 @@ local function UpdateBarButton(slot)
 
       button.sticky = false
 
+      local icon = false
       local macro = GetActionText(slot)
       local _, _, body = GetMacroInfo(GetMacroIndexByName(macro))
       local s, e = strfind(body, '/flyout')
@@ -225,6 +229,8 @@ local function UpdateBarButton(slot)
          end
 
          if strfind(body, '%[icon%]') then
+            icon = true
+
             body = strgsub(body, '%[icon%]', '')
          end
 
@@ -238,20 +244,23 @@ local function UpdateBarButton(slot)
 
          if table.getn(button.flyoutActions) > 0 then
             local cost
+            local action, type, texture = GetFlyoutActionInfo(button.flyoutActions[1])
 
-            button.flyoutAction, button.flyoutActionType = GetFlyoutActionInfo(button.flyoutActions[1])
-
-            if button.flyoutActionType == 0 then
+            if type == 0 then
                FlyoutScanner:SetOwner(WorldFrame, 'ANCHOR_NONE')
-               FlyoutScanner:SetSpell(button.flyoutAction, 'spell')
+               FlyoutScanner:SetSpell(action, 'spell')
                _, _, cost = string.find(FlyoutScanner.manaText:GetText() or '', '^(%d+)')
             end
 
             flyouts[slot] = {
-               action = button.flyoutAction,
-               type = button.flyoutActionType,
+               action = action,
+               type = type,
+               texture = icon and texture or false,
                cost = cost and tonumber(cost) or 0
             }
+
+            button.flyoutAction = action
+            button.flyoutActionType = type
          end
 
          Flyout_UpdateFlyoutArrow(button)
@@ -327,16 +336,6 @@ function Flyout_OnClick(button)
          local as, ae = string.find(body, oldAction, 1, true)
          local bs, be = string.find(body, newAction, 1, true)
          if as and bs then
-            if strfind(body, '%[icon%]') then
-               local texture = button:GetNormalTexture():GetTexture()
-               for i = 1, GetNumMacroIcons() do
-                  if GetMacroIconInfo(i) == texture then
-                     icon = i
-                     break
-                  end
-               end
-            end
-
             body =
                string.sub(body, 1, as - 1)
                .. newAction
@@ -444,15 +443,7 @@ function Flyout_Show(button)
       b.sticky = button.sticky
       local texture = nil
 
-      b.flyoutAction, b.flyoutActionType = GetFlyoutActionInfo(n)
-
-      if b.flyoutActionType == 0 then
-         texture = GetSpellTexture(b.flyoutAction, 'spell')
-      elseif b.flyoutActionType == 1 then
-         _, texture = GetMacroInfo(b.flyoutAction)
-      elseif b.flyoutActionType == 2 then
-         texture = GetItemTexture(b.flyoutAction)
-      end
+      b.flyoutAction, b.flyoutActionType, texture = GetFlyoutActionInfo(n)
 
       if texture then
          b:ClearAllPoints()
@@ -563,6 +554,12 @@ function GetActionCooldown(slot)
       end
    end
    return original.GetActionCooldown(slot)
+end
+
+original.GetActionTexture = GetActionTexture
+function GetActionTexture(slot)
+   local action = flyouts[slot]
+   return action and action.texture or original.GetActionTexture(slot)
 end
 
 original.IsUsableAction = IsUsableAction
