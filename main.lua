@@ -237,7 +237,7 @@ local function UpdateBarButton(slot)
          strsplit(body, ';', button.flyoutActions)
 
          if table.getn(button.flyoutActions) > 0 then
-            local cost = 0
+            local cost
 
             button.flyoutAction, button.flyoutActionType = GetFlyoutActionInfo(button.flyoutActions[1])
 
@@ -250,7 +250,7 @@ local function UpdateBarButton(slot)
             flyouts[slot] = {
                action = button.flyoutAction,
                type = button.flyoutActionType,
-               cost = tonumber(cost)
+               cost = cost and tonumber(cost) or 0
             }
          end
 
