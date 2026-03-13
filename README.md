@@ -9,8 +9,9 @@
 Clicking the flyout or using the keybind of the action button that the flyout is assigned to will use the flyout's default action. The default action of a flyout is the first action (spell or macro) in the flyout macro. You can right-click a flyout action to set it as the default action on the fly.
 
 The macro command also supports certain modifiers that modify the behavior of the macro:
-- `[sticky]` - flyout will remain opened after using one of its actions
+- `[direction:DIRECTION]` - flyout will expand into the specified direction, ignoring default behavior
 - `[icon]` - flyout icon will try to use the icon of its default action
+- `[sticky]` - flyout will remain opened after using one of its actions
 
 ## Compatibility
 
@@ -20,4 +21,4 @@ The add-on relies on functions provided by the default action bar and action but
 
 I want to thank all contributors that have shared their code to improve this add-on, namely:
 
-`Sourini` `veechs` `Whitealion`
+`KameleonUK` `Sourini` `veechs` `Whitealion`
