@@ -140,6 +140,10 @@ local function GetFlyoutActionInfo(action)
 end
 
 local function GetFlyoutDirection(button)
+   if button.flyoutDirection then
+      return button.flyoutDirection
+   end
+
    local horizontal = false
    local bar = button:GetParent()
    if bar:GetWidth() > bar:GetHeight() then
@@ -212,6 +216,7 @@ local function UpdateBarButton(slot)
       end
 
       button.sticky = false
+      button.flyoutDirection = nil
 
       local icon = false
       local macro = GetActionText(slot)
@@ -238,6 +243,14 @@ local function UpdateBarButton(slot)
             icon = true
 
             body = strgsub(body, '%[icon%]', '')
+         end
+
+         -- Identify direction override.
+         local _, _, dirValue = strfind(body, '%[direction:(%a+)%]')
+         if dirValue then
+            body = strgsub(body, '%[direction:%a+%]', '')
+            local dirMap = { up = 'TOP', down = 'BOTTOM', left = 'LEFT', right = 'RIGHT' }
+            button.flyoutDirection = dirMap[strlower(dirValue)]
          end
 
          body = strsub(body, e + 1)
