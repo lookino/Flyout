@@ -178,7 +178,7 @@ end
 local function FlyoutBarButton_OnEnter()
    Flyout_Show(this)
 
-   pcall(ActionButton_SetTooltip())
+   pcall(ActionButton_SetTooltip)
 end
 
 local function FlyoutBarButton_OnClick()
