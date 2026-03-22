@@ -181,12 +181,6 @@ local function FlyoutBarButton_OnEnter()
    pcall(ActionButton_SetTooltip)
 end
 
-local function FlyoutBarButton_OnClick()
-   if arg1 ~= 'RightButton' then
-      Flyout_OnClick(this)
-   end
-end
-
 local function UpdateBarButton(slot)
    local button = Flyout_GetActionButton(slot)
    if button then
@@ -206,12 +200,6 @@ local function UpdateBarButton(slot)
             button.preFlyoutOnLeave = nil
          end
 
-         -- Restore original OnClick when this slot is no longer a flyout.
-         if button.preFlyoutOnClick ~= nil then
-            button:SetScript('OnClick', button.preFlyoutOnClick)
-            button.preFlyoutOnClick = nil
-         end
-
          flyouts[slot] = nil
          return
       end
@@ -227,11 +215,6 @@ local function UpdateBarButton(slot)
          if not button.preFlyoutOnEnter then
             button.preFlyoutOnEnter = button:GetScript('OnEnter')
             button.preFlyoutOnLeave = button:GetScript('OnLeave')
-         end
-
-         if button.preFlyoutOnClick == nil then
-            button.preFlyoutOnClick = button:GetScript('OnClick') or false
-            button:SetScript('OnClick', FlyoutBarButton_OnClick)
          end
 
          -- Identify sticky menus.
