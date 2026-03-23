@@ -413,7 +413,7 @@ local function FlyoutBarButton_UpdateCooldown(button, reset)
    end
 end
 
-local function FlyoutButton_OnUpdate()
+function FlyoutBarButton_OnUpdate()
    -- Update tooltip.
    if GetMouseFocus() == this and (not this.lastUpdate or GetTime() - this.lastUpdate > 1) then
       this:GetScript('OnEnter')()
@@ -438,12 +438,6 @@ function Flyout_Show(button)
       end
 
       b.flyoutParent = button
-
-      -- Things that only need to happen once.
-      if not b.cooldown then
-         b.cooldown = _G['FlyoutButton' .. i .. 'Cooldown']
-         b:SetScript('OnUpdate', FlyoutButton_OnUpdate)
-      end
 
       b.sticky = button.sticky
       local texture = nil

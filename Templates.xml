@@ -1,5 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
-    <CheckButton name="FlyoutButtonTemplate" virtual="true" inherits="ActionButtonTemplate" parent="UIParent" hidden="true" frameStrata="FULLSCREEN">
+    <CheckButton name="FlyoutButtonTemplate" virtual="true" hidden="true" frameStrata="FULLSCREEN">
         <HitRectInsets>
             <AbsInset left="-3" right="-3" top="-3" bottom="-3" />
         </HitRectInsets>
@@ -22,13 +22,60 @@
                 </Anchor>
             </Anchors>
         </NormalTexture>
+        <PushedTexture name="$parentPushedTexture" file="Interface\Buttons\UI-Quickslot-Depress">
+            <TexCoords left="0.08" right="0.92" top="0.08" bottom="0.92" />
+            <Anchors>
+                <Anchor point="TOPLEFT">
+                    <Offset>
+                        <AbsDimension x="1" y="-1" />
+                    </Offset>
+                </Anchor>
+                <Anchor point="BOTTOMRIGHT">
+                    <Offset>
+                        <AbsDimension x="-1" y="1" />
+                    </Offset>
+                </Anchor>
+            </Anchors>
+        </PushedTexture>
+        <CheckedTexture name="$parentCheckedTexture" file="Interface\Buttons\CheckButtonHilight" alphaMode="ADD">
+            <TexCoords left="0.08" right="0.92" top="0.08" bottom="0.92" />
+            <Anchors>
+                <Anchor point="TOPLEFT">
+                    <Offset>
+                        <AbsDimension x="1" y="-1" />
+                    </Offset>
+                </Anchor>
+                <Anchor point="BOTTOMRIGHT">
+                    <Offset>
+                        <AbsDimension x="-1" y="1" />
+                    </Offset>
+                </Anchor>
+            </Anchors>
+        </CheckedTexture>
+        <HighlightTexture alphaMode="ADD" file="Interface\Buttons\ButtonHilight-Square"/>
+        <Frames>
+            <Model name="$parentCooldown" inherits="CooldownFrameTemplate">
+                <Size x="36" y="36" />
+                <Anchors>
+                    <Anchor point="CENTER">
+                        <Offset>
+                            <AbsDimension x="0" y="-1" />
+                        </Offset>
+                    </Anchor>
+                </Anchors>
+            </Model>
+        </Frames>
         <Scripts>
             <OnLoad>
                 this.flyoutAction = ""
                 this.flyoutActionType = -1
+                this.cooldown = getglobal(this:GetName() .. 'Cooldown')
 
                 this:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
             </OnLoad>
+            <OnUpdate>
+                FlyoutBarButton_OnUpdate()
+            </OnUpdate>
             <OnClick>
                 Flyout_OnClick(this)
             </OnClick>
