@@ -4,6 +4,7 @@
 ## Notes: Allows the player to create a flyout action bar button.
 ## Version: 1.1.5
 ## SavedVariablesPerCharacter: Flyout_Config
+## OptionalDeps: SuperMacro
 
 Templates.xml
 

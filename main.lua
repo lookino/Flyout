@@ -577,8 +577,8 @@ function IsUsableAction(slot)
 end
 
 original.UseAction = UseAction
-function UseAction(slot, checkCursor)
-   original.UseAction(slot, checkCursor)
+function UseAction(slot, checkCursor, onSelf)
+   original.UseAction(slot, checkCursor, onSelf)
 
    Flyout_OnClick(Flyout_GetActionButton(slot))
    Flyout_Hide()
